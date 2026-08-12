@@ -320,9 +320,15 @@ body {
   transform: scale(1.2);
 }
 
-.generate-btn {
-  width: 100%;
+/* Button group for Generate and Clear buttons */
+.button-group {
+  display: flex;
+  gap: 12px;
   margin-top: 20px;
+}
+
+.generate-btn {
+  flex: 1;
   padding: 16px;
   font-size: 18px;
   font-weight: 500;
@@ -339,5 +345,27 @@ body {
 }
 
 .generate-btn i {
+  margin-right: 8px;
+}
+
+/* Clear button styling */
+.clear-btn {
+  flex: 0 0 auto;
+  padding: 16px 20px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+  background: #999;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.clear-btn:hover {
+  background: #666;
+}
+
+.clear-btn i {
   margin-right: 8px;
 }

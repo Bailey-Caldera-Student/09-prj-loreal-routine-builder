@@ -5,6 +5,7 @@ const selectedProductsList = document.getElementById("selectedProductsList");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
 const generateRoutineBtn = document.getElementById("generateRoutine");
+const clearProductsBtn = document.getElementById("clearProducts");
 const userInput = document.getElementById("userInput");
 
 /* Array to store selected products */
@@ -15,6 +16,27 @@ let messages = [];
 
 /* Cloudflare Worker URL for OpenAI API calls */
 const WORKER_URL = "https://chat-worker.bailey-caldera1070.workers.dev/";
+
+/* localStorage key for persisting selected products */
+const STORAGE_KEY = "loreal_selected_products";
+
+/* Load selected products from localStorage on page load */
+function loadSelectedProductsFromStorage() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      selectedProducts = JSON.parse(stored);
+    } catch (error) {
+      console.error("Error loading stored products:", error);
+      selectedProducts = [];
+    }
+  }
+}
+
+/* Save selected products to localStorage */
+function saveSelectedProductsToStorage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedProducts));
+}
 
 /* Show initial placeholder until user selects a category */
 productsContainer.innerHTML = `
@@ -73,6 +95,9 @@ function toggleProductSelection(product) {
   /* Update the visual displays */
   updateSelectedProductsList();
   highlightSelectedProducts();
+
+  /* Save to localStorage */
+  saveSelectedProductsToStorage();
 }
 
 /* Remove a product from selection */
@@ -80,6 +105,19 @@ function deselectProduct(productId) {
   selectedProducts = selectedProducts.filter((p) => p.id !== productId);
   updateSelectedProductsList();
   highlightSelectedProducts();
+
+  /* Save to localStorage */
+  saveSelectedProductsToStorage();
+}
+
+/* Clear all selected products */
+function clearAllProducts() {
+  selectedProducts = [];
+  updateSelectedProductsList();
+  highlightSelectedProducts();
+
+  /* Save to localStorage */
+  saveSelectedProductsToStorage();
 }
 
 /* Highlight selected product cards */
@@ -318,4 +356,27 @@ chatForm.addEventListener("submit", async (e) => {
 
   /* Send the user's message to the Worker */
   await sendMessageToWorker(userMessage);
+});
+
+/* Clear all selected products button handler */
+clearProductsBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  clearAllProducts();
+});
+
+/* Initialize page: load saved products on page load */
+document.addEventListener("DOMContentLoaded", async () => {
+  /* Load saved products from localStorage */
+  loadSelectedProductsFromStorage();
+
+  /* Update the display with saved products */
+  updateSelectedProductsList();
+
+  /* Load all products to check which ones are saved and highlight them */
+  if (selectedProducts.length > 0) {
+    const allProducts = await loadProducts();
+
+    /* Highlight saved products if a category hasn't been selected yet */
+    highlightSelectedProducts();
+  }
 });
