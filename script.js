@@ -178,7 +178,10 @@ async function sendMessageToWorker(userMessage) {
   } catch (error) {
     /* Display error message if API call fails */
     console.error("Error:", error);
-    displayMessageInChat("assistant", "Sorry, I encountered an error. Please try again.");
+    displayMessageInChat(
+      "assistant",
+      "Sorry, I encountered an error. Please try again.",
+    );
   }
 }
 
@@ -218,7 +221,10 @@ categoryFilter.addEventListener("change", async (e) => {
 generateRoutineBtn.addEventListener("click", async () => {
   /* Check if products are selected */
   if (selectedProducts.length === 0) {
-    displayMessageInChat("assistant", "Please select at least one product before generating a routine.");
+    displayMessageInChat(
+      "assistant",
+      "Please select at least one product before generating a routine.",
+    );
     return;
   }
 
