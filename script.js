@@ -185,16 +185,63 @@ async function sendMessageToWorker(userMessage) {
   }
 }
 
+/* Format content to convert numbered/bulleted lists into readable HTML */
+function formatContent(text) {
+  /* Split content by line breaks */
+  const lines = text.split("\n");
+  let htmlContent = "";
+  let inList = false;
+
+  lines.forEach((line) => {
+    const trimmedLine = line.trim();
+
+    /* Check if line is a numbered list item (e.g., "1. ", "2. ") */
+    const numberedMatch = trimmedLine.match(/^\d+\.\s+(.+)$/);
+
+    /* Check if line is a bulleted list item (e.g., "- ", "• ") */
+    const bulletMatch = trimmedLine.match(/^[-•]\s+(.+)$/);
+
+    if (numberedMatch || bulletMatch) {
+      /* If not already in a list, start one */
+      if (!inList) {
+        inList = true;
+        htmlContent += '<ul class="routine-list">';
+      }
+
+      /* Add list item */
+      const itemText = numberedMatch ? numberedMatch[1] : bulletMatch[1];
+      htmlContent += `<li>${itemText}</li>`;
+    } else if (trimmedLine !== "") {
+      /* Close list if we were in one and hit a non-list line */
+      if (inList) {
+        inList = false;
+        htmlContent += "</ul>";
+      }
+
+      /* Add paragraph for regular text */
+      htmlContent += `<p>${trimmedLine}</p>`;
+    }
+  });
+
+  /* Close list if still open at end */
+  if (inList) {
+    htmlContent += "</ul>";
+  }
+
+  return htmlContent;
+}
+
 /* Display a message in the chat window */
 function displayMessageInChat(role, content) {
   /* Create a message element with role-specific styling */
   const messageDiv = document.createElement("div");
   messageDiv.className = `chat-message ${role}`;
 
-  /* Add the message content */
-  messageDiv.innerHTML = `
-    <p>${content}</p>
-  `;
+  /* Format the content for better readability */
+  const formattedContent = formatContent(content);
+
+  /* Add the formatted message content */
+  messageDiv.innerHTML = formattedContent;
 
   /* Add message to chat window */
   chatWindow.appendChild(messageDiv);
@@ -238,12 +285,12 @@ generateRoutineBtn.addEventListener("click", async () => {
     messages.push({
       role: "system",
       content:
-        "You are a knowledgeable L'Oréal skincare and beauty advisor. Help users build personalized beauty routines using the products they select. Provide practical, friendly advice tailored to their chosen products.",
+        "You are a knowledgeable L'Oréal skincare and beauty advisor. Help users build personalized beauty routines using the products they select. IMPORTANT: Use numbered lists ONLY for the initial routine creation. For follow-up questions and conversations, respond in natural paragraph format unless the user specifically asks for a list. Provide detailed, helpful explanations that educate users about WHY each product matters and HOW to use it effectively. Be friendly, practical, and specific with your advice.",
     });
   }
 
   /* Create the user's initial request for routine generation */
-  const routineRequest = `Please create a personalized daily beauty routine using these products: ${productList}. Include morning and evening steps with brief explanations for each product's use.`;
+  const routineRequest = `Please create a personalized daily beauty routine using these products: ${productList}. Format the routine as a numbered list with separate morning and evening sections. For each step, include: (1) the product name and brand, (2) a detailed explanation of what this product does and why it's important for the routine, and (3) how to apply or use it. Be thorough and educational in your explanations.`;
 
   /* Send the routine request to the Worker */
   await sendMessageToWorker(routineRequest);

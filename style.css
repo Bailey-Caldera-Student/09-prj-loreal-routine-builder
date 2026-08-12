@@ -106,7 +106,19 @@ body {
 }
 
 .chat-message p {
-  margin: 0;
+  margin-bottom: 10px;
+}
+
+/* Routine list styling */
+.chat-message .routine-list {
+  margin: 12px 0;
+  padding-left: 24px;
+  list-style-type: decimal;
+}
+
+.chat-message .routine-list li {
+  margin-bottom: 10px;
+  line-height: 1.6;
 }
 
 /* placeholder message */
