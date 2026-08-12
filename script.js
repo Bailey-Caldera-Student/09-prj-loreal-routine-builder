@@ -1,5 +1,6 @@
 /* Get references to DOM elements */
 const categoryFilter = document.getElementById("categoryFilter");
+const searchInput = document.getElementById("searchInput");
 const productsContainer = document.getElementById("productsContainer");
 const selectedProductsList = document.getElementById("selectedProductsList");
 const chatForm = document.getElementById("chatForm");
@@ -23,6 +24,9 @@ let selectedProducts = [];
 
 /* Array to store conversation history for OpenAI */
 let messages = [];
+
+/* Array to store all products from current category */
+let currentCategoryProducts = [];
 
 /* Cloudflare Worker URL for OpenAI API calls */
 const WORKER_URL = "https://chat-worker.bailey-caldera1070.workers.dev/";
@@ -343,18 +347,73 @@ function displayMessageInChat(role, content) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+/* Filter products based on search query and category */
+function filterAndDisplayProducts() {
+  const searchQuery = searchInput.value.toLowerCase().trim();
+
+  /* If no category is selected, show placeholder */
+  if (categoryFilter.value === "") {
+    productsContainer.innerHTML = `
+      <div class="placeholder-message">
+        Select a category to view products
+      </div>
+    `;
+    return;
+  }
+
+  /* Filter category products by search query */
+  let filteredProducts = currentCategoryProducts;
+
+  if (searchQuery) {
+    filteredProducts = currentCategoryProducts.filter((product) => {
+      /* Search in product name, brand, and description */
+      const name = product.name.toLowerCase();
+      const brand = product.brand.toLowerCase();
+      const description = product.description.toLowerCase();
+
+      return (
+        name.includes(searchQuery) ||
+        brand.includes(searchQuery) ||
+        description.includes(searchQuery)
+      );
+    });
+  }
+
+  /* Display filtered products or no results message */
+  if (filteredProducts.length === 0) {
+    productsContainer.innerHTML = `
+      <div class="placeholder-message">
+        No products found matching your search.
+      </div>
+    `;
+  } else {
+    displayProducts(filteredProducts);
+  }
+}
+
 /* Filter and display products when category changes */
 categoryFilter.addEventListener("change", async (e) => {
   const products = await loadProducts();
   const selectedCategory = e.target.value;
 
-  /* filter() creates a new array containing only products 
-     where the category matches what the user selected */
-  const filteredProducts = products.filter(
+  /* Filter products by selected category and store them */
+  currentCategoryProducts = products.filter(
     (product) => product.category === selectedCategory,
   );
 
-  displayProducts(filteredProducts);
+  /* Clear search input when category changes */
+  searchInput.value = "";
+
+  /* Display the category products */
+  filterAndDisplayProducts();
+});
+
+/* Filter products in real-time when search input changes */
+searchInput.addEventListener("input", () => {
+  /* Only filter if a category is selected */
+  if (categoryFilter.value !== "") {
+    filterAndDisplayProducts();
+  }
 });
 
 /* Handle Generate Routine button click */
