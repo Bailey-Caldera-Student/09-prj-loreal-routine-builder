@@ -8,6 +8,16 @@ const generateRoutineBtn = document.getElementById("generateRoutine");
 const clearProductsBtn = document.getElementById("clearProducts");
 const userInput = document.getElementById("userInput");
 
+/* Modal DOM elements */
+const productModal = document.getElementById("productModal");
+const closeModalBtn = document.getElementById("closeModal");
+const modalProductImage = document.getElementById("modalProductImage");
+const modalProductName = document.getElementById("modalProductName");
+const modalProductBrand = document.getElementById("modalProductBrand");
+const modalProductDescription = document.getElementById(
+  "modalProductDescription",
+);
+
 /* Array to store selected products */
 let selectedProducts = [];
 
@@ -50,6 +60,30 @@ async function loadProducts() {
   const response = await fetch("products.json");
   const data = await response.json();
   return data.products;
+}
+
+/* Open modal with product details */
+function openProductModal(product) {
+  /* Populate modal with product information */
+  modalProductImage.src = product.image;
+  modalProductImage.alt = product.name;
+  modalProductName.textContent = product.name;
+  modalProductBrand.textContent = product.brand;
+  modalProductDescription.textContent = product.description;
+
+  /* Display the modal */
+  productModal.style.display = "flex";
+
+  /* Prevent body from scrolling when modal is open */
+  document.body.style.overflow = "hidden";
+}
+
+/* Close product modal */
+function closeProductModal() {
+  productModal.style.display = "none";
+
+  /* Re-enable body scrolling */
+  document.body.style.overflow = "auto";
 }
 
 /* Update the selected products list display above the button */
@@ -151,20 +185,41 @@ function displayProducts(products) {
         <h3>${product.name}</h3>
         <p>${product.brand}</p>
       </div>
+      <button type="button" class="details-btn" data-product-id="${product.id}">
+        <i class="fa-solid fa-circle-info"></i> Details
+      </button>
     </div>
   `,
     )
     .join("");
 
-  /* Add click handlers to product cards */
+  /* Add click handlers to product cards for selection */
   const productCards = productsContainer.querySelectorAll(".product-card");
   productCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      /* Find the product data from the card */
-      const productId = parseInt(card.getAttribute("data-product-id"));
+    card.addEventListener("click", (e) => {
+      /* Only select if not clicking the details button */
+      if (!e.target.closest(".details-btn")) {
+        /* Find the product data from the card */
+        const productId = parseInt(card.getAttribute("data-product-id"));
+        const product = products.find((p) => p.id === productId);
+        if (product) {
+          toggleProductSelection(product);
+        }
+      }
+    });
+  });
+
+  /* Add click handlers to details buttons */
+  const detailsButtons = productsContainer.querySelectorAll(".details-btn");
+  detailsButtons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      /* Find the product data */
+      const productId = parseInt(button.getAttribute("data-product-id"));
       const product = products.find((p) => p.id === productId);
       if (product) {
-        toggleProductSelection(product);
+        openProductModal(product);
       }
     });
   });
@@ -379,4 +434,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* Highlight saved products if a category hasn't been selected yet */
     highlightSelectedProducts();
   }
+
+  /* Add event listeners for modal */
+  closeModalBtn.addEventListener("click", closeProductModal);
+
+  /* Close modal when clicking outside the modal content */
+  productModal.addEventListener("click", (e) => {
+    /* Only close if clicking on the modal background, not the content */
+    if (e.target === productModal) {
+      closeProductModal();
+    }
+  });
+
+  /* Close modal when pressing Escape key */
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && productModal.style.display === "flex") {
+      closeProductModal();
+    }
+  });
 });
