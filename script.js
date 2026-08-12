@@ -34,6 +34,123 @@ const WORKER_URL = "https://chat-worker.bailey-caldera1070.workers.dev/";
 /* localStorage key for persisting selected products */
 const STORAGE_KEY = "loreal_selected_products";
 
+/* localStorage key for RTL preference */
+const RTL_STORAGE_KEY = "loreal_rtl_mode";
+
+/* Detect if current language is RTL (Right-to-Left) */
+function isRTLLanguage() {
+  /* List of RTL language codes */
+  const rtlLanguages = [
+    "ar" /* Arabic */,
+    "he" /* Hebrew */,
+    "fa" /* Farsi/Persian */,
+    "ur" /* Urdu */,
+    "yi" /* Yiddish */,
+    "iw" /* Hebrew (alternate code) */,
+    "ckb" /* Central Kurdish */,
+    "ji" /* Yiddish (alternate code) */,
+    "ku" /* Kurdish */,
+    "ps" /* Pashto */,
+    "sd" /* Sindhi */,
+  ];
+
+  /* Get the current language from multiple sources */
+  let currentLang =
+    document.documentElement.lang ||
+    document.documentElement.getAttribute("lang") ||
+    navigator.language ||
+    navigator.userLanguage ||
+    "";
+
+  /* Check if Google Translate has set a different language in the page */
+  /* Google Translate sometimes uses different attributes */
+  const gtLang = document.documentElement.getAttribute("data-gt-lang");
+  if (gtLang) {
+    currentLang = gtLang;
+  }
+
+  /* Extract language code (e.g., "ar" from "ar-SA") */
+  const langCode = currentLang.split("-")[0].toLowerCase();
+
+  /* Debug: log the detected language */
+  if (langCode) {
+    console.log(
+      "🌍 Detected language:",
+      currentLang,
+      "| Language code:",
+      langCode,
+      "| Is RTL:",
+      rtlLanguages.includes(langCode),
+    );
+  }
+
+  /* Check if current language is in RTL languages list */
+  return rtlLanguages.includes(langCode);
+}
+
+/* Auto-detect and apply RTL language settings */
+function autoDetectAndApplyRTL() {
+  if (isRTLLanguage()) {
+    document.documentElement.dir = "rtl";
+    document.body.style.direction = "rtl";
+    console.log("✅ RTL mode enabled");
+  } else {
+    document.documentElement.dir = "ltr";
+    document.body.style.direction = "ltr";
+    console.log("✅ LTR mode enabled");
+  }
+}
+
+/* Set up monitoring for language changes (e.g., when using translators) */
+function setupLanguageMonitoring() {
+  let lastLang = document.documentElement.lang;
+
+  /* Create a MutationObserver to watch for changes to the html element's attributes */
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      /* Check if any relevant attribute has changed */
+      if (
+        mutation.attributeName === "lang" ||
+        mutation.attributeName === "data-gt-lang"
+      ) {
+        const newLang = document.documentElement.lang;
+        if (newLang !== lastLang) {
+          console.log(
+            "📝 Language attribute changed from",
+            lastLang,
+            "to",
+            newLang,
+          );
+          lastLang = newLang;
+          autoDetectAndApplyRTL();
+        }
+      }
+    });
+  });
+
+  /* Watch for changes to the html element's lang-related attributes */
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["lang", "data-gt-lang", "data-gt-translated"],
+  });
+
+  /* Also check every 2 seconds in case translator doesn't trigger MutationObserver */
+  /* This catches Google Translate and other translators that bypass MutationObserver */
+  setInterval(() => {
+    const currentLang = document.documentElement.lang;
+    if (currentLang !== lastLang) {
+      console.log(
+        "🔄 Language change detected (interval check) from",
+        lastLang,
+        "to",
+        currentLang,
+      );
+      lastLang = currentLang;
+      autoDetectAndApplyRTL();
+    }
+  }, 2000); /* Check every 2 seconds */
+}
+
 /* Load selected products from localStorage on page load */
 function loadSelectedProductsFromStorage() {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -480,6 +597,12 @@ clearProductsBtn.addEventListener("click", (e) => {
 
 /* Initialize page: load saved products on page load */
 document.addEventListener("DOMContentLoaded", async () => {
+  /* Auto-detect and apply RTL based on current language */
+  autoDetectAndApplyRTL();
+
+  /* Start monitoring for language changes from translators */
+  setupLanguageMonitoring();
+
   /* Load saved products from localStorage */
   loadSelectedProductsFromStorage();
 

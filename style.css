@@ -5,6 +5,131 @@
   padding: 0;
 }
 
+/* —— RTL Support —— */
+html {
+  direction: ltr;
+}
+
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+html[dir="rtl"] body {
+  text-align: right;
+}
+
+html[dir="rtl"] .site-header {
+  text-align: center;
+}
+
+html[dir="rtl"] .rtl-toggle {
+  float: left;
+  clear: both;
+}
+
+html[dir="rtl"] .logo {
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  margin-bottom: 15px;
+}
+
+html[dir="rtl"] .search-section {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .search-input::placeholder {
+  text-align: right;
+}
+
+html[dir="rtl"] .products-grid {
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+html[dir="rtl"] .product-card {
+  text-align: right;
+}
+
+html[dir="rtl"] .details-btn {
+  text-align: center;
+}
+
+html[dir="rtl"] .product-info {
+  text-align: right;
+}
+
+html[dir="rtl"] .selected-product-tag {
+  flex-direction: row-reverse;
+  gap: 8px;
+}
+
+html[dir="rtl"] .remove-btn {
+  margin-inline-start: 4px;
+  margin-inline-end: 0;
+}
+
+html[dir="rtl"] .button-group {
+  flex-direction: row;
+}
+
+html[dir="rtl"] .generate-btn i,
+html[dir="rtl"] .clear-btn i,
+html[dir="rtl"] .details-btn i {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+html[dir="rtl"] .chat-message.user {
+  margin-left: 0;
+  margin-right: 40px;
+  text-align: left;
+}
+
+html[dir="rtl"] .chat-message.assistant {
+  margin-right: 0;
+  margin-left: 40px;
+  text-align: right;
+}
+
+html[dir="rtl"] .close-btn {
+  left: 15px;
+  right: auto;
+}
+
+html[dir="rtl"] .modal-body {
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .modal-description {
+  text-align: justify;
+}
+
+html[dir="rtl"] .modal-details {
+  text-align: right;
+}
+
+html[dir="rtl"] .send-btn {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
+html[dir="rtl"] .chat-form input {
+  text-align: right;
+}
+
+html[dir="rtl"] .selected-product-tag {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+html[dir="rtl"] .placeholder-message {
+  text-align: center;
+}
+
+html[dir="rtl"] .visually-hidden {
+  margin-inline-end: -1px;
+}
+
 /* —— body + fonts —— */
 body {
   font-family: "Montserrat", Arial, Helvetica, sans-serif;
@@ -539,5 +664,20 @@ body {
   .search-input {
     width: 100%;
     min-width: 0;
+  }
+
+  /* Mobile RTL adjustments */
+  html[dir="rtl"] .search-section {
+    flex-direction: column;
+  }
+
+  html[dir="rtl"] .chat-message.user {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  html[dir="rtl"] .chat-message.assistant {
+    margin-left: 0;
+    margin-right: 0;
   }
 }
